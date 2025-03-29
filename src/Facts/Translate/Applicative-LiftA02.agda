@@ -24,24 +24,6 @@ Applicative-to-LiftA02 {i} {F} applicative =
       ＝⟨ Ap-Identity applicative ⟩
         id (F A)
       ＝-qed
-    ; LiftA1-to-LiftA2 = \{A} {B} {C} → \(f : A → B → C) → \(α : F A) → \(β : F B) →
-      ＝-begin
-        liftA2₀ (id (B → C)) (liftA1₀ f α) β
-      ＝⟨⟩
-        liftA2₀ (id (B → C)) (liftA2₀ (id (A → B → C)) (pure₀ f) α) β
-      ＝⟨⟩
-        ap₀ (ap₀ (pure₀ (id (B → C))) (ap₀ (ap₀ (pure₀ (id (A → B → C))) (pure₀ f)) α)) β
-      ＝⟨ fun-eq (\x → ap₀ (ap₀ (pure₀ (id (B → C))) (ap₀ x α)) β) (Ap-Homomorphism applicative _ _) ⟩
-        ap₀ (ap₀ (pure₀ (id (B → C))) (ap₀ (pure₀ ((id (A → B → C)) f)) α)) β
-      ＝⟨⟩
-        ap₀ (ap₀ (pure₀ (id (B → C))) (ap₀ (pure₀ f) α)) β
-      ＝⟨ fun-eq (\x → ap₀ (x (ap₀ (pure₀ f) α)) β) (Ap-Identity applicative) ⟩
-        ap₀ ((id (F (B → C))) (ap₀ (pure₀ f) α)) β
-      ＝⟨⟩
-        ap₀ (ap₀ (pure₀ f) α) β
-      ＝⟨⟩
-        liftA2₀ f α β
-      ＝-qed
     ; LiftA2-Homomorphism = \{A} {B} {C} → \(f : A → B → C) → \(a : A) → \(b : B) →
       ＝-begin
         liftA2₀ f (pure₀ a) (pure₀ b)
@@ -52,25 +34,7 @@ Applicative-to-LiftA02 {i} {F} applicative =
       ＝⟨ Ap-Homomorphism applicative _ _ ⟩
         pure₀ (f a b)
       ＝-qed
-    ; LiftA2-Homomorphism-Left = \{A} {B} {C} → \(f : A → B → C) → \(a : A) → \(β : F B) →
-      ＝-begin
-        liftA2₀ f (liftA0₀ a) β
-      ＝⟨⟩
-        ap₀ (ap₀ (pure₀ f) (pure₀ a)) β
-      ＝⟨ fun-eq (\x → ap₀ x β) (Ap-Homomorphism applicative _ _) ⟩
-        ap₀ (pure₀ (f a)) β
-      ＝⟨⟩
-        ap₀ (pure₀ ((id (B → C)) (f a))) β
-      ＝⟨- fun-eq (\x → ap₀ x β) (Ap-Homomorphism applicative _ _) ⟩
-        ap₀ (ap₀ (pure₀ (id (B → C))) (pure₀ (f a))) β
-      ＝⟨⟩
-        liftA2₀ (id (B → C)) (liftA0₀ (f a)) β
-      ＝⟨⟩
-        liftA1₀ (f a) β
-      ＝⟨⟩
-        liftA1₀ (\b → f a b) β
-      ＝-qed
-    ; LiftA2-Homomorphism-Right = \{A} {B} {C} → \(f : A → B → C) → \(α : F A) → \(b : B) →
+    ; LiftA2-Homomorphism2 = \{A} {B} {C} → \(f : A → B → C) → \(α : F A) → \(b : B) →
       ＝-begin
         liftA2₀ f α (liftA0₀ b)
       ＝⟨⟩
@@ -93,6 +57,28 @@ Applicative-to-LiftA02 {i} {F} applicative =
         liftA2₀ (id (A → C)) (liftA0₀ (\a → f a b)) α
       ＝⟨⟩
         liftA1₀ (\a → f a b) α
+      ＝-qed
+    ; LiftA2-LiftA1-Composition1 = \{A} {A'} {B} {C} → \(f : A' → B → C) → \(g : A → A') → \(α : F A) → \(β : F B) →
+      ＝-begin
+        liftA2₀ f (liftA2₀ (id (A → A')) (pure₀ g) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ f) (ap₀ (ap₀ (pure₀ (id (A → A'))) (pure₀ g)) α)) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (pure₀ f) (ap₀ x α)) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (pure₀ f) (ap₀ (pure₀ ((id (A → A')) g)) α)) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ f) (ap₀ (pure₀ g) α)) β
+      ＝⟨- fun-eq (\x → ap₀ x β) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ f)) (pure₀ g)) α) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x (pure₀ g)) α) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ f)) (pure₀ g)) α) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ x α) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (pure₀ (_∘_ f g)) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (f ∘ g)) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → f (g a))) α) β
+      ＝⟨⟩
+        liftA2₀ (\a → f (g a)) α β
       ＝-qed
     ; LiftA2-LiftA2-Composition1 = \{A} {B} {C} {D} {E} → \(f : C → D → E) → \(g : A → B → C) → \(α : F A) → \(β : F B) → \(δ : F D) → 
       ＝-begin
@@ -206,13 +192,15 @@ LiftA02-to-Applicative
           ap₀ (ap₀ (ap₀ (pure₀ _∘_) u) v) w
         ＝⟨⟩
           ap₀ (ap₀ (liftA2₀ (id ((B → C) → (A → B) → (A → C))) (liftA0₀ _∘_) u) v) w
-        ＝⟨ fun-eq (\x → ap₀ (ap₀ x v) w) (LiftA2-Homomorphism-Left lifta02 _ _ _) ⟩
+        ＝⟨ fun-eq (\x → ap₀ (ap₀ x v) w) (LiftA2-Homomorphism1 lifta02 _ _ _) ⟩
           ap₀ (ap₀ (liftA1₀ (\f → (id ((B → C) → (A → B) → (A → C))) _∘_ f) u) v) w
         ＝⟨⟩
           ap₀ (ap₀ (liftA1₀ _∘_ u) v) w
         ＝⟨⟩
           ap₀ (liftA2₀ (id ((A → B) → (A → C))) (liftA1₀ _∘_ u) v) w
-        ＝⟨ fun-eq (\x → ap₀ x w) (LiftA1-to-LiftA2 lifta02 _ _ _) ⟩
+        ＝⟨ fun-eq (\x → ap₀ x w) (LiftA2-LiftA1-Composition1 lifta02 _ _ _ _) ⟩
+          ap₀ (liftA2₀ (\f → \g → (id ((A → B) → (A → C))) (_∘_ f) g) u v) w
+        ＝⟨⟩
           ap₀ (liftA2₀ _∘_ u v) w
         ＝⟨⟩
           liftA2₀ (id (A → C)) (liftA2₀ _∘_ u v) w
@@ -242,7 +230,7 @@ LiftA02-to-Applicative
           ap₀ u (pure₀ a)
         ＝⟨⟩
           liftA2₀ (id (A → B)) u (liftA0₀ a)
-        ＝⟨ LiftA2-Homomorphism-Right lifta02 _ _ _ ⟩
+        ＝⟨ LiftA2-Homomorphism2 lifta02 _ _ _ ⟩
           liftA1₀ (\f → (id (A → B)) f a) u
         ＝⟨⟩
           liftA1₀ (\f → f a) u
@@ -263,6 +251,70 @@ LiftA02-to-Applicative
      pure₀ = liftA0₀
      ap₀ : ∀{A B : Set i} → F (A → B) → F A → F B
      ap₀ {A} {B} Ff α = liftA2₀ (id (A → B)) Ff α
+
+
+LiftA02-to-Applicative-ap-Eq : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → {A B : Set i} → ap (LiftA02-to-Applicative lifta02) {A} {B} ＝ liftA2 lifta02 (id (A → B))
+LiftA02-to-Applicative-ap-Eq {i} {F} lifta02 {A} {B} = ＝-refl _
+
+LiftA02-to-Applicative-pure-Eq : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → {A : Set i} → pure (LiftA02-to-Applicative lifta02) {A} ＝ liftA0 lifta02 {A}
+LiftA02-to-Applicative-pure-Eq {i} {F} lifta02 {A} = ＝-refl _
+
+Applicative-to-LiftA02-liftA2-Eq : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → {A B C : Set i} → (f : A → B → C) → (α : F A) → liftA2 (Applicative-to-LiftA02 applicative) f α ＝ ap applicative (ap applicative (pure applicative f) α)
+Applicative-to-LiftA02-liftA2-Eq {i} {F} applicative {A} {B} {C} f α = ＝-refl _
+
+Applicative-to-LiftA02-liftA0-Eq : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → {A : Set i} → liftA0 (Applicative-to-LiftA02 applicative) {A} ＝ pure applicative {A}
+Applicative-to-LiftA02-liftA0-Eq {i} {F} applicative {A} = ＝-refl _
+
+LiftA1-Eq-AFmap : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → {A B : Set i} → liftA1 lifta02 {A} {B} ＝ afmap (LiftA02-to-Applicative lifta02) {A} {B}
+LiftA1-Eq-AFmap {i} {F} lifta02 {A} {B} =
+  let applicative : Applicative F
+      applicative = LiftA02-to-Applicative lifta02
+  in fun-ext _ _ (\(f : A → B) → (fun-ext _ _ (\(α : F A) → 
+    ＝-begin
+      liftA1 lifta02 f α
+    ＝⟨⟩
+      liftA2 lifta02 (id (A → B)) (liftA0 lifta02 f) α
+    ＝⟨- fun-eq (\x → x (liftA0 lifta02 f) α) (LiftA02-to-Applicative-ap-Eq lifta02) ⟩
+      ap applicative (liftA0 lifta02 f) α
+    ＝⟨- fun-eq (\x → ap applicative (x f) α) (LiftA02-to-Applicative-pure-Eq lifta02) ⟩
+      ap applicative (pure applicative f) α
+    ＝⟨⟩
+      afmap applicative f α
+    ＝⟨⟩
+      afmap (LiftA02-to-Applicative lifta02) f α
+    ＝-qed
+  )))
+
+AFmap-Eq-LiftA1 : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → {A B : Set i} → afmap applicative {A} {B} ＝ liftA1 (Applicative-to-LiftA02 applicative) {A} {B}
+AFmap-Eq-LiftA1 {i} {F} applicative {A} {B} =
+  let lifta02 : LiftA02 F
+      lifta02 = Applicative-to-LiftA02 applicative
+  in fun-ext _ _ (\(f : A → B) → fun-ext _ _ (\(α : F A) →
+  ＝-begin
+    afmap applicative f α
+  ＝⟨⟩
+    ap applicative (pure applicative f) α
+  ＝⟨
+      fun-eq (\x → ap applicative x α) (
+        ＝-begin
+          pure applicative f
+        ＝⟨⟩
+          pure applicative (id (A → B) f)
+        ＝⟨- Ap-Homomorphism applicative _ f ⟩
+          ap applicative (pure applicative (id (A → B))) (pure applicative f)
+        ＝-qed)
+    ⟩
+    ap applicative (ap applicative (pure applicative (id (A → B))) (pure applicative f)) α
+  ＝⟨ fun-eq (λ x → x α) (Applicative-to-LiftA02-liftA2-Eq applicative (id (A → B)) (pure applicative f)) ⟩
+    liftA2 lifta02 (id (A → B)) (pure applicative f) α
+  ＝⟨- fun-eq (\x → liftA2 lifta02 (id (A → B)) (x f) α) (Applicative-to-LiftA02-liftA0-Eq applicative) ⟩
+    liftA2 lifta02 (id (A → B)) (liftA0 lifta02 f) α
+  ＝⟨⟩
+    liftA1 lifta02 f α
+  ＝⟨⟩
+    liftA1 (Applicative-to-LiftA02 applicative) f α
+  ＝-qed
+  ))
 
 retract-LiftA02-to-Applicative : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → LiftA02-to-Applicative (Applicative-to-LiftA02 applicative) ＝ applicative
 retract-LiftA02-to-Applicative {i} {F} applicative
@@ -320,11 +372,13 @@ retract-Applicative-to-LiftA02 {i} {F} lifta02 =
         ap₀ (liftA2₀ (id (A → B → C)) (liftA0₀ f) α) β
       ＝⟨⟩
         liftA2₀ (id (B → C)) (liftA2₀ (id (A → B → C)) (liftA0₀ f) α) β
-      ＝⟨ fun-eq (\x → liftA2₀ (id (B → C)) x β) (LiftA2-Homomorphism-Left lifta02 _ _ _) ⟩
+      ＝⟨ fun-eq (\x → liftA2₀ (id (B → C)) x β) (LiftA2-Homomorphism1 lifta02 _ _ _) ⟩
         liftA2₀ (id (B → C)) (liftA1₀ (\a → id (A → B → C) f a) α) β
       ＝⟨⟩
         liftA2₀ (id (B → C)) (liftA1₀ f α) β
-      ＝⟨ LiftA1-to-LiftA2 lifta02 _ _ _ ⟩
+      ＝⟨ LiftA2-LiftA1-Composition1 lifta02 _ _ _ _ ⟩
+        liftA2₀ (\a → \b → (id (B → C)) (f a) b) α β
+      ＝⟨⟩
         liftA2₀ f α β
       ＝-qed
     )))))

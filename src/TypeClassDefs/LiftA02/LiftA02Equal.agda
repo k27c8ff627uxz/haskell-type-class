@@ -53,22 +53,21 @@ private
     field
       LiftA2-Identity : {A : Set i} → liftA2' (id (A → A)) (liftA0' (id A)) ＝ id (F A)
       LiftA2-Homomorphism : {A B C : Set i} → (f : A → B → C) → (a : A) → (b : B) → liftA2' f (liftA0' a) (liftA0' b) ＝ liftA0' (f a b)
-      LiftA2-Homomorphism-Left : {A B C : Set i} → (f : A → B → C) → (a : A) → (β : F B) → liftA2' f (liftA0' a) β ＝ liftA1' (\b → f a b) β
-      LiftA2-Homomorphism-Right : {A B C : Set i} → (f : A → B → C) → (α : F A) → (b : B) → liftA2' f α (liftA0' b) ＝ liftA1' (\a → f a b) α
-      LiftA1-to-LiftA2 : {A B C : Set i} → (f : A → B → C) → (α : F A) → (β : F B) → liftA2' (id (B → C)) (liftA1' f α) β ＝ liftA2' f α β
+      LiftA2-Homomorphism2 : {A B C : Set i} → (f : A → B → C) → (α : F A) → (b : B) → liftA2' f α (liftA0' b) ＝ liftA1' (\a → f a b) α
+      LiftA2-LiftA1-Composition1 : {A A' B C : Set i} → (f : A' → B → C) → (g : A → A') → (α : F A) → (β : F B) → liftA2' f (liftA1' g α) β ＝ liftA2' (\a → \b → f (g a) b) α β
       LiftA2-LiftA2-Composition1 : {A B C D E : Set i} → (f : C → D → E) → (g : A → B → C) → (α : F A) → (β : F B) → (δ : F D) → liftA2' f (liftA2' g α β) δ ＝ liftA3' (\a → \b → \d → f (g a b) d) α β δ
       LiftA2-LiftA2-Composition2 : {A B C D E : Set i} → (f : C → D → E) → (g : A → B → D) → (α : F A) → (β : F B) → (γ : F C) → liftA2' f γ (liftA2' g α β) ＝ liftA3' (\c → \a → \b → f c (g a b)) γ α β
 
   to-Condition : {i : Level} → {F : Set i → Set i} → (liftA02 : LiftA02 F) → Conditions (to-Body liftA02)
   to-Condition
-    record { liftA0 = liftA0₀ ; liftA2 = liftA2₀ ; LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism-Left = LiftA2-Homomorphism-Left₀ ; LiftA2-Homomorphism-Right = LiftA2-Homomorphism-Right₀ ; LiftA1-to-LiftA2 = LiftA1-to-LiftA2₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
-    = record { LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism-Left = LiftA2-Homomorphism-Left₀ ; LiftA2-Homomorphism-Right = LiftA2-Homomorphism-Right₀ ; LiftA1-to-LiftA2 = LiftA1-to-LiftA2₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
+    record { liftA0 = liftA0₀ ; liftA2 = liftA2₀ ; LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism2 = LiftA2-Homomorphism2₀ ; LiftA2-LiftA1-Composition1 = LiftA2-LiftA1-Composition1₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
+    = record { LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism2 = LiftA2-Homomorphism2₀ ; LiftA2-LiftA1-Composition1 = LiftA2-LiftA1-Composition1₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
     
   to-LiftA02 : {i : Level} → {F : Set i → Set i} → (body : Body F) → (conditions : Conditions body) → LiftA02 F
   to-LiftA02
-    record { liftA0 = liftA0 ; liftA2 = liftA2 }
-    record { LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism-Left = LiftA2-Homomorphism-Left₀ ; LiftA2-Homomorphism-Right = LiftA2-Homomorphism-Right₀ ; LiftA1-to-LiftA2 = LiftA1-to-LiftA2₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
-    = record { liftA0 = liftA0 ; liftA2 = liftA2 ; LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism-Left = LiftA2-Homomorphism-Left₀ ; LiftA2-Homomorphism-Right = LiftA2-Homomorphism-Right₀ ; LiftA1-to-LiftA2 = LiftA1-to-LiftA2₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
+    record { liftA0 = liftA0₀ ; liftA2 = liftA2₀ }
+    record { LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism2 = LiftA2-Homomorphism2₀ ; LiftA2-LiftA1-Composition1 = LiftA2-LiftA1-Composition1₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
+    = record { liftA0 = liftA0₀ ; liftA2 = liftA2₀ ; LiftA2-Identity = LiftA2-Identity₀ ; LiftA2-Homomorphism = LiftA2-Homomorphism₀ ; LiftA2-Homomorphism2 = LiftA2-Homomorphism2₀ ; LiftA2-LiftA1-Composition1 = LiftA2-LiftA1-Composition1₀ ; LiftA2-LiftA2-Composition1 = LiftA2-LiftA2-Composition1₀ ; LiftA2-LiftA2-Composition2 = LiftA2-LiftA2-Composition2₀ }
     
   LiftA02-to-LiftA02-Eq : {i : Level} → {F : Set i → Set i} → (liftA02 : LiftA02 F) → liftA02 ＝ to-LiftA02 (to-Body liftA02) (to-Condition liftA02)
   LiftA02-to-LiftA02-Eq liftA02 = ＝-refl _

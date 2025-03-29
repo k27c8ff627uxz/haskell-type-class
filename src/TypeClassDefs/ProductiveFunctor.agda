@@ -2,5 +2,5 @@
 
 module TypeClassDefs.ProductiveFunctor where
 
-open import TypeClassDefs.ProductiveFunctor.Def
-open import TypeClassDefs.ProductiveFunctor.RecordEqual
+open import TypeClassDefs.ProductiveFunctor.Def public
+open import TypeClassDefs.ProductiveFunctor.RecordEqual public
