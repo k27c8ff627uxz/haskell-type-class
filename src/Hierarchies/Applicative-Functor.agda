@@ -1,12 +1,12 @@
 {-# OPTIONS --prop #-}
 
-module Facts.Translate.Applicative-Functor where
+module Hierarchies.Applicative-Functor where
 
 open import Agda.Primitive
 open import Logic
 open import Elements
 open import TypeClassDefs
-open import Facts.Translate.Applicative-LiftA02
+open import Hierarchies.Applicative-LiftA02
 
 Applicative-to-Functor : {i : Level} → {F : Set i → Set i} → Applicative F → Functor F
 Applicative-to-Functor

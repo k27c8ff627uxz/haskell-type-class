@@ -1,6 +1,6 @@
 {-# OPTIONS --prop #-}
 
-module Facts.Translate.Monad-Applicative where
+module Hierarchies.Monad-Applicative where
 
 open import Agda.Primitive
 open import Logic

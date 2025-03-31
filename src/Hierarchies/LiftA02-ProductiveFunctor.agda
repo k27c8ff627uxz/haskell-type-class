@@ -1,14 +1,14 @@
 {-# OPTIONS --prop #-}
 
-module Facts.Translate.LiftA02-ProductiveFunctor where
+module Hierarchies.LiftA02-ProductiveFunctor where
 
 open import Agda.Primitive
 open import Logic
 open import Elements
 open import TypeClassDefs
-open import Facts.Translate.Applicative-Functor
-open import Facts.Translate.Applicative-FunctorWithUnit
-open import Facts.Translate.Applicative-LiftA02
+open import Hierarchies.Applicative-Functor
+open import Hierarchies.Applicative-FunctorWithUnit
+open import Hierarchies.Applicative-LiftA02
 
 ProductiveFunctor-to-LiftA02 : {i : Level} → {F : Set i → Set i} → ProductiveFunctor F → LiftA02 F
 ProductiveFunctor-to-LiftA02 {i} {F} pfunctor =

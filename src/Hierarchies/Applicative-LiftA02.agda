@@ -1,6 +1,6 @@
 {-# OPTIONS --prop #-}
 
-module Facts.Translate.Applicative-LiftA02 where
+module Hierarchies.Applicative-LiftA02 where
 
 open import Agda.Primitive
 open import Logic
