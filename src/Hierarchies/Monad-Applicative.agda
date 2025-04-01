@@ -7,8 +7,8 @@ open import Logic
 open import Elements
 open import TypeClassDefs
 
-Monad-Applicative : {i : Level} → {F : Set i → Set i} → Monad F → Applicative F
-Monad-Applicative {i} {F} monad
+Monad-to-Applicative : {i : Level} → {F : Set i → Set i} → Monad F → Applicative F
+Monad-to-Applicative {i} {F} monad
   = record {
     pure = pure₀
     ; ap = ap₀
