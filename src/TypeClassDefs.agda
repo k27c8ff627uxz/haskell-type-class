@@ -2,6 +2,7 @@
 
 module TypeClassDefs where
 
+open import TypeClassDefs.Monoid public
 open import TypeClassDefs.Functor public
 open import TypeClassDefs.FunctorWithUnit public
 open import TypeClassDefs.Applicative public
@@ -11,3 +12,5 @@ open import TypeClassDefs.Alternative public
 open import TypeClassDefs.MultiFunctor public
 open import TypeClassDefs.Monad public
 open import TypeClassDefs.MonadPlus public
+open import TypeClassDefs.MonadFail public
+open import TypeClassDefs.MonadTrans public
