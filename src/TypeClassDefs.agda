@@ -10,6 +10,8 @@ open import TypeClassDefs.LiftA02 public
 open import TypeClassDefs.ProductiveFunctor public
 open import TypeClassDefs.Alternative public
 open import TypeClassDefs.MultiFunctor public
+open import TypeClassDefs.FoldrFoldable public
+open import TypeClassDefs.FoldMapFoldable public
 open import TypeClassDefs.Monad public
 open import TypeClassDefs.MonadPlus public
 open import TypeClassDefs.MonadFail public
