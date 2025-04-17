@@ -12,6 +12,7 @@ open import TypeClassDefs.Alternative public
 open import TypeClassDefs.MultiFunctor public
 open import TypeClassDefs.FoldrFoldable public
 open import TypeClassDefs.FoldMapFoldable public
+open import TypeClassDefs.FoldableWithFunctor public
 open import TypeClassDefs.Monad public
 open import TypeClassDefs.MonadPlus public
 open import TypeClassDefs.MonadFail public
