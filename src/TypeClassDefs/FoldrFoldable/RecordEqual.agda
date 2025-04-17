@@ -4,6 +4,8 @@ module TypeClassDefs.FoldrFoldable.RecordEqual where
 
 open import Agda.Primitive
 open import Logic
+open import Elements
+open import TypeClassDefs.Monoid
 open import TypeClassDefs.FoldrFoldable.Def
 
 private
@@ -37,18 +39,27 @@ private
     ＝-qed
 
   record Conditions {i : Level} {T : Set i → Set i} (body : Body T) : Prop (lsuc i) where
+    foldr' : {A B : Set i} → (A → B → B) → B → T A → B
+    foldr' = Body.foldr body
+
+    field
+      Foldr-MonoidHomomorphism :
+        {M₁ M₂ : Set i} → {monoid₁ : Monoid M₁} → {monoid₂ : Monoid M₂} → (ψ : M₁ → M₂) → MonoidHomomorphism monoid₁ monoid₂ ψ →
+        {A : Set i} → (f : A → M₁) → (α : T A) →
+          foldr' (\a → \b → mappend monoid₂ ((ψ ∘ f) a) b) (mempty monoid₂) α ＝ ψ (foldr' (\a → \b → mappend monoid₁ (f a) b) (mempty monoid₁) α)
+      Foldr-Destruct : {A B : Set i} → (f : A → B → B) → (α : T A) → (b : B) → foldr' f b α ＝ foldr' (\a → \(r : B → B) → (\b → f a (r b))) (id B) α b
 
   to-Conditions : {i : Level} → {T : Set i → Set i} → (foldable : FoldrFoldable T) → Conditions (to-Body foldable)
   to-Conditions
-    record {}
-    = record {}
+    record { Foldr-MonoidHomomorphism = Foldr-MonoidHomomorphism₀ ; Foldr-Destruct = Foldr-Destruct₀ }
+    = record { Foldr-MonoidHomomorphism = Foldr-MonoidHomomorphism₀ ; Foldr-Destruct = Foldr-Destruct₀ }
 
   to-FoldrFoldable : {i : Level} → {T : Set i → Set i} → (body : Body T) → (conditions : Conditions body) → FoldrFoldable T
   to-FoldrFoldable
     {i} {T}
     record { foldr = foldr₀ }
-    record {}
-    = record { foldr = foldr₀ }
+    record { Foldr-MonoidHomomorphism = Foldr-MonoidHomomorphism₀ ; Foldr-Destruct = Foldr-Destruct₀ }
+    = record { foldr = foldr₀ ; Foldr-MonoidHomomorphism = Foldr-MonoidHomomorphism₀ ; Foldr-Destruct = Foldr-Destruct₀ }
 
   FoldrFoldable-to-FoldrFoldable-Eq : {i : Level} → {T : Set i → Set i} → (foldable : FoldrFoldable T) → foldable ＝ to-FoldrFoldable (to-Body foldable) (to-Conditions foldable)
   FoldrFoldable-to-FoldrFoldable-Eq foldable = ＝-refl _

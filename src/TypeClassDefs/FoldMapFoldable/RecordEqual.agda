@@ -4,6 +4,7 @@ module TypeClassDefs.FoldMapFoldable.RecordEqual where
 
 open import Agda.Primitive
 open import Logic
+open import Elements
 open import TypeClassDefs.Monoid
 open import TypeClassDefs.FoldMapFoldable.Def
 
@@ -44,15 +45,26 @@ private
     ＝-qed
 
   record Conditions {i : Level} {T : Set i → Set i} (body : Body T) : Prop (lsuc i) where
+    foldMap' : {M : Set i} → (monoid : Monoid M) → {A : Set i} → (A → M) → (T A → M)
+    foldMap' = Body.foldMap body
+
+    field
+      FoldMap-MonoidHomomorphism :
+        {M₁ M₂ : Set i} → {monoid₁ : Monoid M₁} → {monoid₂ : Monoid M₂} →
+        (ψ : M₁ → M₂) → MonoidHomomorphism monoid₁ monoid₂ ψ →
+        {A : Set i} → (f : A → M₁) → (α : T A) →
+        foldMap' monoid₂ (ψ ∘ f) α ＝ ψ (foldMap' monoid₁ f α)
 
   to-Conditions : {i : Level} → {T : Set i → Set i} → (foldMap : FoldMapFoldable T) → (Conditions (to-Body foldMap))
-  to-Conditions foldMap = record {}
+  to-Conditions
+    record { FoldMap-MonoidHomomorphism = FoldMap-MonoidHomomorphism₀ }
+    = record { FoldMap-MonoidHomomorphism = FoldMap-MonoidHomomorphism₀ }
 
   to-FoldMapFoldable : {i : Level} → {T : Set i → Set i} → (body : Body T) → (conditions : Conditions body) → FoldMapFoldable T
   to-FoldMapFoldable
     record { foldMap = foldMap₀}
-    record {}
-    = record { foldMap = foldMap₀ }
+    record { FoldMap-MonoidHomomorphism = FoldMap-MonoidHomomorphism₀ }
+    = record { foldMap = foldMap₀ ; FoldMap-MonoidHomomorphism = FoldMap-MonoidHomomorphism₀ }
 
   FoldMapFoldable-to-FoldMapFoldable-Eq : {i : Level} → {T : Set i → Set i} → (foldable : FoldMapFoldable T) → foldable ＝ to-FoldMapFoldable (to-Body foldable) (to-Conditions foldable)
   FoldMapFoldable-to-FoldMapFoldable-Eq foldable = ＝-refl _
