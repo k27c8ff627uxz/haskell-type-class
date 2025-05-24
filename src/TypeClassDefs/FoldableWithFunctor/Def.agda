@@ -15,9 +15,12 @@ record FoldableWithFunctor {i} (F : Set i → Set i) : Set (lsuc i) where
 
   fofmap : {A B : Set i} → (A → B) → (F A → F B)
   fofmap = fmap FoldableWithFunctor-to-Functor
-  
+  FOFmap-Identity : {A : Set i} →  fofmap (id A) ＝ id (F A)
+  FOFmap-Identity = Fmap-Identity FoldableWithFunctor-to-Functor
+  FOFmap-Composition : {A B C : Set i} → {f : B → C} → {g : A → B} → fofmap (f ∘ g) ＝ (fofmap f) ∘ (fofmap g)
+  FOFmap-Composition = Fmap-Composition FoldableWithFunctor-to-Functor
+
   field
-    Fold-FmapHomomorphism : {A₁ A₂ M : Set i} → (monoid : Monoid M) → (r : A₂ → M) → (f : A₁ → A₂) → (α : F A₁) → fold monoid (fofmap (r ∘ f) α) ＝ fold monoid (fofmap r (fofmap f α))
     Fold-MonoidHomomorphism : {M₁ M₂ : Set i} → (monoid₁ : Monoid M₁) → (monoid₂ : Monoid M₂) → (ψ : M₁ → M₂) → (MonoidHomomorphism monoid₁ monoid₂ ψ) → (α : F M₁) → fold monoid₂ (fofmap ψ α) ＝ ψ (fold monoid₁ α)
 
 open FoldableWithFunctor public

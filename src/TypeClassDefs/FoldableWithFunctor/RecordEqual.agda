@@ -66,19 +66,18 @@ private
     fofmap' = fmap (Body.FoldableWithFunctor-to-Functor body)
 
     field
-      Fold-FmapHomomorphism : {A₁ A₂ M : Set i} → (monoid : Monoid M) → (r : A₂ → M) → (f : A₁ → A₂) → (α : F A₁) → fold' monoid (fofmap' (r ∘ f) α) ＝ fold' monoid (fofmap' r (fofmap' f α))
       Fold-MonoidHomomorphism : {M₁ M₂ : Set i} → (monoid₁ : Monoid M₁) → (monoid₂ : Monoid M₂) → (ψ : M₁ → M₂) → (MonoidHomomorphism monoid₁ monoid₂ ψ) → (α : F M₁) → fold' monoid₂ (fofmap' ψ α) ＝ ψ (fold' monoid₁ α)
 
   to-Conditions : {i : Level} → {F : Set i → Set i} → (foldable : FoldableWithFunctor F) → Conditions (to-Body foldable)
   to-Conditions
-    record { Fold-FmapHomomorphism = Fold-FmapHomomorphism₀ ; Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
-    = record { Fold-FmapHomomorphism = Fold-FmapHomomorphism₀ ; Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
+    record { Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
+    = record { Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
 
   to-FoldableWithFunctor : {i : Level} → {F : Set i → Set i} → (body : Body F) → Conditions body → FoldableWithFunctor F
   to-FoldableWithFunctor
     record { FoldableWithFunctor-to-Functor = FoldableWithFunctor-to-Functor₀ ; fold = fold₀ }
-    record { Fold-FmapHomomorphism = Fold-FmapHomomorphism₀ ; Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
-    = record { FoldableWithFunctor-to-Functor = FoldableWithFunctor-to-Functor₀ ; fold = fold₀ ; Fold-FmapHomomorphism = Fold-FmapHomomorphism₀ ; Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
+    record { Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
+    = record { FoldableWithFunctor-to-Functor = FoldableWithFunctor-to-Functor₀ ; fold = fold₀ ; Fold-MonoidHomomorphism = Fold-MonoidHomomorphism₀ }
 
   to-FoldableWithFunctor-Eq : {i : Level} → {F : Set i → Set i} → (body₁ body₂ : Body F) → (conditions₁ : Conditions body₁) → (conditions₂ : Conditions body₂) → body₁ ＝ body₂ → to-FoldableWithFunctor body₁ conditions₁ ＝ to-FoldableWithFunctor body₂ conditions₂
   to-FoldableWithFunctor-Eq body₁ body₂ conditions₁ conditions₂ eq-body = proof-irrelevance-with-type _ _ _ to-FoldableWithFunctor body₁ body₂ conditions₁ conditions₂ eq-body
