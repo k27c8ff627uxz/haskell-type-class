@@ -1,11 +1,12 @@
 {-# OPTIONS --prop #-}
 
-module Hierarchies.Applicative-LiftA02 where
+module Hierarchies.Applicative.Translates where
 
 open import Agda.Primitive
 open import Logic
 open import Elements
 open import TypeClassDefs
+open import Hierarchies.Applicative.toFunctor
 
 Applicative-to-LiftA02 : {i : Level} → {F : Set i → Set i} → Applicative F → LiftA02 F
 Applicative-to-LiftA02 {i} {F} applicative =
@@ -252,144 +253,254 @@ LiftA02-to-Applicative
      ap₀ : ∀{A B : Set i} → F (A → B) → F A → F B
      ap₀ {A} {B} Ff α = liftA2₀ (id (A → B)) Ff α
 
-
-LiftA02-to-Applicative-ap-Eq : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → {A B : Set i} → ap (LiftA02-to-Applicative lifta02) {A} {B} ＝ liftA2 lifta02 (id (A → B))
-LiftA02-to-Applicative-ap-Eq {i} {F} lifta02 {A} {B} = ＝-refl _
-
-LiftA02-to-Applicative-pure-Eq : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → {A : Set i} → pure (LiftA02-to-Applicative lifta02) {A} ＝ liftA0 lifta02 {A}
-LiftA02-to-Applicative-pure-Eq {i} {F} lifta02 {A} = ＝-refl _
-
-Applicative-to-LiftA02-liftA2-Eq : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → {A B C : Set i} → (f : A → B → C) → (α : F A) → liftA2 (Applicative-to-LiftA02 applicative) f α ＝ ap applicative (ap applicative (pure applicative f) α)
-Applicative-to-LiftA02-liftA2-Eq {i} {F} applicative {A} {B} {C} f α = ＝-refl _
-
-Applicative-to-LiftA02-liftA0-Eq : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → {A : Set i} → liftA0 (Applicative-to-LiftA02 applicative) {A} ＝ pure applicative {A}
-Applicative-to-LiftA02-liftA0-Eq {i} {F} applicative {A} = ＝-refl _
-
-LiftA1-Eq-AFmap : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → {A B : Set i} → liftA1 lifta02 {A} {B} ＝ afmap (LiftA02-to-Applicative lifta02) {A} {B}
-LiftA1-Eq-AFmap {i} {F} lifta02 {A} {B} =
-  let applicative : Applicative F
-      applicative = LiftA02-to-Applicative lifta02
-  in fun-ext _ _ (\(f : A → B) → (fun-ext _ _ (\(α : F A) → 
-    ＝-begin
-      liftA1 lifta02 f α
-    ＝⟨⟩
-      liftA2 lifta02 (id (A → B)) (liftA0 lifta02 f) α
-    ＝⟨- fun-eq (\x → x (liftA0 lifta02 f) α) (LiftA02-to-Applicative-ap-Eq lifta02) ⟩
-      ap applicative (liftA0 lifta02 f) α
-    ＝⟨- fun-eq (\x → ap applicative (x f) α) (LiftA02-to-Applicative-pure-Eq lifta02) ⟩
-      ap applicative (pure applicative f) α
-    ＝⟨⟩
-      afmap applicative f α
-    ＝⟨⟩
-      afmap (LiftA02-to-Applicative lifta02) f α
-    ＝-qed
-  )))
-
-AFmap-Eq-LiftA1 : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → {A B : Set i} → afmap applicative {A} {B} ＝ liftA1 (Applicative-to-LiftA02 applicative) {A} {B}
-AFmap-Eq-LiftA1 {i} {F} applicative {A} {B} =
-  let lifta02 : LiftA02 F
-      lifta02 = Applicative-to-LiftA02 applicative
-  in fun-ext _ _ (\(f : A → B) → fun-ext _ _ (\(α : F A) →
-  ＝-begin
-    afmap applicative f α
-  ＝⟨⟩
-    ap applicative (pure applicative f) α
-  ＝⟨
-      fun-eq (\x → ap applicative x α) (
-        ＝-begin
-          pure applicative f
-        ＝⟨⟩
-          pure applicative (id (A → B) f)
-        ＝⟨- Ap-Homomorphism applicative _ f ⟩
-          ap applicative (pure applicative (id (A → B))) (pure applicative f)
-        ＝-qed)
-    ⟩
-    ap applicative (ap applicative (pure applicative (id (A → B))) (pure applicative f)) α
-  ＝⟨ fun-eq (λ x → x α) (Applicative-to-LiftA02-liftA2-Eq applicative (id (A → B)) (pure applicative f)) ⟩
-    liftA2 lifta02 (id (A → B)) (pure applicative f) α
-  ＝⟨- fun-eq (\x → liftA2 lifta02 (id (A → B)) (x f) α) (Applicative-to-LiftA02-liftA0-Eq applicative) ⟩
-    liftA2 lifta02 (id (A → B)) (liftA0 lifta02 f) α
-  ＝⟨⟩
-    liftA1 lifta02 f α
-  ＝⟨⟩
-    liftA1 (Applicative-to-LiftA02 applicative) f α
-  ＝-qed
-  ))
-
-retract-LiftA02-to-Applicative : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → LiftA02-to-Applicative (Applicative-to-LiftA02 applicative) ＝ applicative
-retract-LiftA02-to-Applicative {i} {F} applicative
-  = Applicative-Eq
-    _
-    applicative
-    (
+LiftA02-to-ProductiveFunctor : {i : Level} → {F : Set i → Set i} → LiftA02 F → ProductiveFunctor F
+LiftA02-to-ProductiveFunctor {i} {F} lifta02 =
+  record {
+    ProductiveFunctor-to-FunctorWithUnit = ufunctor
+    ; fpair = fpair₀
+    ; Fpair-Homomorphism1 = \{A} {B} → \(a : A) → \(β : F B) →
       ＝-begin
-        pure (LiftA02-to-Applicative (Applicative-to-LiftA02 applicative))
+        fpair₀ (punit₀ a) β
       ＝⟨⟩
-        liftA0 (Applicative-to-LiftA02 applicative)
+        liftA2₀ (\a → \b → (a , b)) (liftA0₀ a) β
+      ＝⟨ LiftA2-Homomorphism1 lifta02 _ _ _ ⟩
+        liftA1₀ (\b → (\a → \b' → (a , b')) a b) β
       ＝⟨⟩
-        pure applicative
+        liftA1₀ (\b → (a , b)) β
+      ＝⟨⟩
+        liftA1₀ (\b → (id (B → Pair A B)) (\b' → (a , b')) b) β
+      ＝⟨- LiftA2-Homomorphism1 lifta02 _ _ _ ⟩
+        liftA2₀ (id (B → Pair A B)) (liftA0₀ (\b → (a , b))) β
+      ＝⟨⟩
+        pfmap₀ (\b → (a , b)) β
       ＝-qed
-    )
-    \{A} {B} → fun-ext _ _ (\(ψ : F (A → B)) → fun-ext _ _ (\(α : F A) →
+    ; Fpair-Homomorphism2 = \{A} {B} → \(α : F A) → \(b : B) →
       ＝-begin
-        ap (LiftA02-to-Applicative (Applicative-to-LiftA02 applicative)) ψ α
+        fpair₀ α (punit₀ b)
       ＝⟨⟩
-        liftA2 (Applicative-to-LiftA02 applicative) (id (A → B)) ψ α
+        liftA2₀ (\a → \b → (a , b)) α (liftA0₀ b)
+      ＝⟨ LiftA2-Homomorphism2 lifta02 _ _ _ ⟩
+        liftA1₀ (\a' → (\a → \b → (a , b)) a' b) α
       ＝⟨⟩
-        ap₀ (ap₀ (pure₀ (id (A → B))) ψ) α
-      ＝⟨ fun-eq (\x → ap₀ (x ψ) α) (Ap-Identity applicative) ⟩
-        ap₀ (id (F (A → B)) ψ) α
+        liftA1₀ (\a → (a , b)) α
       ＝⟨⟩
-        ap₀ ψ α
+        pfmap₀ (\a → (a , b)) α
       ＝-qed
-    ))
-    where
-      pure₀ : {A : Set i} → A → F A
-      pure₀ = pure applicative
-      ap₀ : {A B : Set i} → F (A → B) → F A → F B
-      ap₀ = ap applicative
-
-retract-Applicative-to-LiftA02 : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → Applicative-to-LiftA02 (LiftA02-to-Applicative lifta02) ＝ lifta02
-retract-Applicative-to-LiftA02 {i} {F} lifta02 =
-  LiftA02-Eq
-    _
-    lifta02
-    (\{A} → fun-ext _ _ (\(a : A) →
+    ; Fpair-Associative = \{A} {B} {C} → \(α : F A) → \(β : F B) → \(γ : F C) →
       ＝-begin
-        liftA0 (Applicative-to-LiftA02 (LiftA02-to-Applicative lifta02)) a
+        pfmap₀ (\p → assoc-Pair p) (fpair₀ (fpair₀ α β) γ)
       ＝⟨⟩
-        pure₀ a
+        liftA1₀ assoc-Pair (liftA2₀ (\ab → \c → (ab , c)) (liftA2₀ (\a → \b → (a , b)) α β) γ)
+      ＝⟨ fun-eq (\x → pfmap₀ assoc-Pair x) (LiftA2-LiftA2-Composition1 lifta02 _ _ _ _ _) ⟩
+        liftA1₀ assoc-Pair (liftA3₀ (\a → \b → \c → (\ab' → \c' → (ab' , c')) ((\a' → \b' → (a , b)) a b) c) α β γ)
       ＝⟨⟩
-        liftA0₀ a
+        liftA1₀ assoc-Pair (liftA3₀ (\a → \b → \c → ((a , b) , c)) α β γ)
+      ＝⟨ LiftA1-LiftA3-Composition lifta02 _ _ _ _ _ ⟩
+        liftA3₀ (\a' → \b' → \c' → assoc-Pair ((\a → \b → \c → ((a , b) , c)) a' b' c')) α β γ
+      ＝⟨⟩
+        liftA3₀ (\a → \b → \c → assoc-Pair ((a , b) , c)) α β γ 
+      ＝⟨⟩
+        liftA3₀ (\a → \b → \c → (a , (b , c))) α β γ
+      ＝⟨⟩
+        liftA3₀ (\a → \b → \c → (\a' → \bc' → (a' , bc')) a ((\b' → \c' → (b , c)) b c)) α β γ
+      ＝⟨- LiftA2-LiftA2-Composition2 lifta02 _ _ _ _ _ ⟩
+        liftA2₀ (\a → \bc → (a , bc)) α (liftA2₀ (\b → \c → (b , c)) β γ)
+      ＝⟨⟩
+        fpair₀ α (fpair₀ β γ)
       ＝-qed
-    ))
-    (\{A} {B} {C} → (fun-ext _ _ (\(f : A → B → C) → fun-ext _ _ (\(α : F A) → fun-ext _ _ (\(β : F B) →
+    ; Fpair-Fmap-Composition = \{A} {A'} {B} {B'} → \(f : A → A') → \(g : B → B') → \(α : F A) → \(β : F B) →
       ＝-begin
-        liftA2 (Applicative-to-LiftA02 (LiftA02-to-Applicative lifta02)) f α β
+        fpair₀ (pfmap₀ f α) (pfmap₀ g β)
       ＝⟨⟩
-        ap₀ (ap₀ (pure₀ f) α) β
+        liftA2₀ (\a → \b → (a , b)) (liftA1₀ f α) (liftA1₀ g β)
+      ＝⟨ LiftA2-LiftA1-Composition lifta02 _ _ _ _ _ ⟩
+        liftA2₀ (\a → \b → (f a , g b)) α β
       ＝⟨⟩
-        ap₀ (liftA2₀ (id (A → B → C)) (liftA0₀ f) α) β
+        liftA2₀ (\a → \b → (\p → (f (fst p) , g (snd p))) ((\a' → \b' → (a' , b')) a b)) α β
+      ＝⟨- LiftA1-LiftA2-Composition lifta02 _ _ _ _ ⟩
+        liftA1₀ (\p → (f (fst p) , g (snd p))) (liftA2₀ (\a → \b → (a , b)) α β)
       ＝⟨⟩
-        liftA2₀ (id (B → C)) (liftA2₀ (id (A → B → C)) (liftA0₀ f) α) β
-      ＝⟨ fun-eq (\x → liftA2₀ (id (B → C)) x β) (LiftA2-Homomorphism1 lifta02 _ _ _) ⟩
-        liftA2₀ (id (B → C)) (liftA1₀ (\a → id (A → B → C) f a) α) β
-      ＝⟨⟩
-        liftA2₀ (id (B → C)) (liftA1₀ f α) β
-      ＝⟨ LiftA2-LiftA1-Composition1 lifta02 _ _ _ _ ⟩
-        liftA2₀ (\a → \b → (id (B → C)) (f a) b) α β
-      ＝⟨⟩
-        liftA2₀ f α β
+        pfmap₀ (\p → (f (fst p) , g (snd p))) (fpair₀ α β)
       ＝-qed
-    )))))
+  }
   where
-    pure₀ : {A : Set i} → A → F A
-    pure₀ = pure (LiftA02-to-Applicative lifta02)
-    ap₀ : {A B : Set i} → (F (A → B)) → F A → F B
-    ap₀ = ap (LiftA02-to-Applicative lifta02)
-    liftA0₀ : {A : Set i} → A → F A
-    liftA0₀ = liftA0 lifta02
+    ufunctor : FunctorWithUnit F
+    ufunctor = LiftA02-to-FunctorWithUnit lifta02
+    pfmap₀ : {A B : Set i} → (A → B) → F A → F B
+    pfmap₀ = ufmap ufunctor
+    punit₀ : {A : Set i} → A → F A
+    punit₀ = unit ufunctor
+    liftA1₀ : {A B : Set i} → (A → B) → F A → F B
+    liftA1₀ = liftA1 lifta02
     liftA2₀ : {A B C : Set i} → (A → B → C) → F A → F B → F C
     liftA2₀ = liftA2 lifta02
-    liftA1₀ : {A B : Set i} → (A → B) → F A → F B
-    liftA1₀ {A} {B} f = liftA2₀ (id (A → B)) (liftA0₀ f)
+    liftA0₀ : {A : Set i} → A → F A
+    liftA0₀ = liftA0 lifta02
+    liftA3₀ : {A B C D : Set i} → (A → B → C → D) → F A → F B → F C → F D
+    liftA3₀ = liftA3 lifta02
+    fpair₀ : {A B : Set i} → F A → F B → F (Pair A B)
+    fpair₀ = liftA2₀ (\a → \b → (a , b))
+
+ProductiveFunctor-to-LiftA02 : {i : Level} → {F : Set i → Set i} → ProductiveFunctor F → LiftA02 F
+ProductiveFunctor-to-LiftA02 {i} {F} pfunctor =
+  record {
+    liftA0 = liftA0₀
+    ; liftA2 = liftA2₀
+    ; LiftA2-Identity = \{A} → fun-ext _ _ (\α →
+      ＝-begin
+        liftA2₀ (id (A → A)) (liftA0₀ (id A)) α
+      ＝⟨⟩
+        pfmap₀ (\p → id (A → A) (fst p) (snd p)) (fpair₀ (punit₀ (id A)) α)
+      ＝⟨⟩
+        pfmap₀ (\p → (fst p) (snd p)) (fpair₀ (punit₀ (id A)) α)
+      ＝⟨ fun-eq (\x → pfmap₀ (\p → fst p (snd p)) x) (Fpair-Homomorphism1 pfunctor _ _) ⟩
+        pfmap₀ (\p → (fst p) (snd p)) (pfmap₀ (\a → ((id A) , a)) α)
+      ＝⟨⟩
+        ((pfmap₀ (\p → (fst p) (snd p))) ∘ (pfmap₀ (\a → (id A , a)))) α
+      ＝⟨- fun-eq (\x → x α) (PFmap-Composition pfunctor) ⟩
+        (pfmap₀ ((\p → (fst p) (snd p)) ∘ (\a → (id A , a))) α)
+      ＝⟨⟩
+        pfmap₀ (\a → (id A) a) α
+      ＝⟨⟩
+        pfmap₀ (id A) α
+      ＝⟨ fun-eq (\x → x α) (PFmap-Identity pfunctor) ⟩
+        id (F A) α
+      ＝-qed
+    )
+    ; LiftA2-Homomorphism = \{A} {B} {C} → \(f : A → B → C) → \(a : A) → \(b : B) →
+      ＝-begin
+        liftA2₀ f (liftA0₀ a) (liftA0₀ b)
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (fpair₀ (punit₀ a) (punit₀ b))
+      ＝⟨ fun-eq (\x → pfmap₀ (\p → f (fst p) (snd p)) x) (Fpair-Homomorphism pfunctor a b) ⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (punit₀ (a , b))
+      ＝⟨ PUnit-Homomorphism pfunctor _ _ ⟩
+        punit₀ ((\p → f (fst p) (snd p)) (a , b))
+      ＝⟨⟩
+        punit₀ (f a b)
+      ＝⟨⟩
+        liftA0₀ (f a b)
+      ＝-qed
+    ; LiftA2-Homomorphism2 = \{A} {B} {C} → \(f : A → B → C) → \(α : F A) → \(b : B) →
+      ＝-begin
+        liftA2₀ f α (liftA0₀ b)
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (fpair₀ α (punit₀ b))
+      ＝⟨ fun-eq (\x → pfmap₀ (\p → f (fst p) (snd p)) x) (Fpair-Homomorphism2 pfunctor _ _) ⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (pfmap₀ (\a → (a , b)) α)
+      ＝⟨- PFmap-Composition' pfunctor α ⟩
+        pfmap₀ ((\p → f (fst p) (snd p)) ∘ (\a → (a , b))) α
+      ＝⟨⟩
+        pfmap₀ (\a → f a b) α
+      ＝⟨⟩
+        pfmap₀ ((\p → (fst p) (snd p)) ∘ (\a → ((\r → f r b) , a))) α
+      ＝⟨ PFmap-Composition' pfunctor α ⟩
+        pfmap₀ (\p → (fst p) (snd p)) (pfmap₀ (\a → ((\r → f r b) , a))  α)
+      ＝⟨- fun-eq (\x → pfmap₀ (\p → (fst p) (snd p)) x) (Fpair-Homomorphism1 pfunctor _ _) ⟩
+        pfmap₀ (\p → (fst p) (snd p)) (fpair₀ (punit₀ (\a → f a b)) α)
+      ＝⟨⟩
+        pfmap₀ (\p → (id (A → C)) (fst p) (snd p)) (fpair₀ (punit₀ (\a → f a b)) α)
+      ＝⟨⟩
+        liftA2₀ (id (A → C)) (liftA0₀ (\a → f a b)) α
+      ＝-qed
+    ; LiftA2-LiftA1-Composition1 = \{A} {A'} {B} {C} → \(f : A' → B → C) → \(g : A → A') → \(α : F A) → \(β : F B) →
+      ＝-begin
+        liftA2₀ f (liftA2₀ (id (A → A')) (liftA0₀ g) α) β
+      ＝⟨⟩
+        liftA2₀ f (pfmap₀ (\p → (id (A → A')) (fst p) (snd p)) (fpair₀ (punit₀ g) α)) β
+      ＝⟨⟩
+        liftA2₀ f (pfmap₀ (\p → (fst p) (snd p)) (fpair₀ (punit₀ g) α)) β
+      ＝⟨ fun-eq (\x → liftA2₀ f (pfmap₀ (\p → fst p (snd p)) x) β) (Fpair-Homomorphism1 pfunctor _ _) ⟩
+        liftA2₀ f (pfmap₀ (\p → (fst p) (snd p)) (pfmap₀ (\a → (g , a)) α)) β
+      ＝⟨- fun-eq (\x → liftA2₀ f x β) (PFmap-Composition' pfunctor _) ⟩
+        liftA2₀ f (pfmap₀ ((\p → (fst p) (snd p)) ∘ (\a → (g , a))) α) β
+      ＝⟨⟩
+        liftA2₀ f (pfmap₀ g α) β
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (fpair₀ (pfmap₀ g α) β)
+      ＝⟨ fun-eq (\x → pfmap₀ (\p → f (fst p) (snd p)) x) (Fpair-Fmap-Composition1 pfunctor _ _ _) ⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (pfmap₀ (\p → (g (fst p) , snd p)) (fpair₀ α β))
+      ＝⟨- PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ ((\p → f (fst p) (snd p)) ∘ (\p → (g (fst p) , snd p))) (fpair₀ α β)
+      ＝⟨⟩
+        pfmap₀ (\p → f (g (fst p)) (snd p)) (fpair₀ α β)
+      ＝⟨⟩
+        pfmap₀ (\p → (\a → f (g a)) (fst p) (snd p)) (fpair₀ α β)
+      ＝⟨⟩
+        liftA2₀ (\a → f (g a)) α β
+      ＝-qed
+    ; LiftA2-LiftA2-Composition1 = \{A} {B} {C} {D} {E} → \(f : C → D → E) → \(g : A → B → C) → \(α : F A) → \(β : F B) → \(δ : F D) →
+      ＝-begin
+        liftA2₀ f (liftA2₀ g α β) δ
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (fpair₀ (pfmap₀ (\p → g (fst p) (snd p)) (fpair₀ α β)) δ)
+      ＝⟨ fun-eq (\x → pfmap₀ (\p → f (fst p) (snd p)) x) (Fpair-Fmap-Composition1 pfunctor _ _ _) ⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (pfmap₀ (\q → ( (\p → g (fst p) (snd p)) (fst q) , snd q)) (fpair₀ (fpair₀ α β) δ))
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (pfmap₀ (\q → (g (fst (fst q)) (snd (fst q)) , snd q)) (fpair₀ (fpair₀ α β) δ))
+      ＝⟨- PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ ((\p → f (fst p) (snd p)) ∘ (\q → (g (fst (fst q)) (snd (fst q)) , snd q))) (fpair₀ (fpair₀ α β) δ)
+      ＝⟨⟩
+        pfmap₀ (\q → f (g (fst (fst q)) (snd (fst q))) (snd q)) (fpair₀ (fpair₀ α β) δ)
+      ＝⟨⟩
+        pfmap₀ ((\p → (fst p) (snd p)) ∘ (\q → ( f (g (fst (fst q)) (snd (fst q))) , snd q))) (fpair₀ (fpair₀ α β) δ)
+      ＝⟨ PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ (\p → (fst p) (snd p)) (pfmap₀ (\q → ( f (g (fst (fst q)) (snd (fst q))) , (snd q))) (fpair₀ (fpair₀ α β) δ))
+      ＝⟨⟩
+        pfmap₀ (\p → (fst p) (snd p)) (pfmap₀ (\q → ( (\p → f (g (fst p) (snd p))) (fst q) , (snd q))) (fpair₀ (fpair₀ α β) δ))
+      ＝⟨- fun-eq (\x → pfmap₀ (\p → fst p (snd p)) x) (Fpair-Fmap-Composition1 pfunctor _ _ _) ⟩
+        pfmap₀ (\p → (fst p) (snd p)) (fpair₀ (pfmap₀ (\p → f (g (fst p) (snd p))) (fpair₀ α β)) δ)
+      ＝⟨⟩
+        pfmap₀ (\p → id (D → E) (fst p) (snd p)) (fpair₀ (pfmap₀ (\p → (\a b → f (g a b)) (fst p) (snd p)) (fpair₀ α β)) δ)
+      ＝⟨⟩
+        liftA2₀ (id (D → E)) (liftA2₀ (\a b → f (g a b)) α β) δ
+      ＝-qed
+    ; LiftA2-LiftA2-Composition2 = \{A} {B} {C} {D} {E} → \(f : C → D → E) → \(g : A → B → D) → \(α : F A) → \(β : F B) → \(γ : F C) →
+      ＝-begin
+        liftA2₀ f γ (liftA2₀ g α β)
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (fpair₀ γ (pfmap₀ (\p → g (fst p) (snd p)) (fpair₀ α β)))
+      ＝⟨ fun-eq (\x → pfmap₀ (\p → f (fst p) (snd p)) x) (Fpair-Fmap-Composition2 pfunctor _ _ _) ⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (pfmap₀ (\p → (fst p , (\q → g (fst q) (snd q)) (snd p))) (fpair₀ γ (fpair₀ α β)))
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (snd p)) (pfmap₀ (\p → (fst p , g (fst (snd p)) (snd (snd p)))) (fpair₀ γ (fpair₀ α β)))
+      ＝⟨- PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ ((\p → f (fst p) (snd p)) ∘ (\p → (fst p , g (fst (snd p)) (snd (snd p))))) (fpair₀ γ (fpair₀ α β))
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst p) (g (fst (snd p)) (snd (snd p)))) (fpair₀ γ (fpair₀ α β))
+      ＝⟨- fun-eq (\x → pfmap₀ (\p → f (fst p) (g (fst (snd p)) (snd (snd p)))) x) (Fpair-Associative pfunctor _ _ _) ⟩
+        pfmap₀ (\p → f (fst p) (g (fst (snd p)) (snd (snd p)))) (pfmap₀ (\p → assoc-Pair p) (fpair₀ (fpair₀ γ α) β))
+      ＝⟨- PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ ((\p → f (fst p) (g (fst (snd p)) (snd (snd p)))) ∘ (\p → assoc-Pair p)) (fpair₀ (fpair₀ γ α) β)
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst (assoc-Pair p)) (g (fst (snd (assoc-Pair p))) (snd (snd (assoc-Pair p))))) (fpair₀ (fpair₀ γ α) β)
+      ＝⟨⟩
+        pfmap₀ (\p → f (fst (fst p)) (g (snd (fst p)) (snd p))) (fpair₀ (fpair₀ γ α) β)
+      ＝⟨⟩
+        pfmap₀ (\p → (\b → f (fst (fst p)) (g (snd (fst p)) b)) (snd p)) (fpair₀ (fpair₀ γ α) β)
+      ＝⟨⟩
+        pfmap₀ ((\p → (fst p) (snd p)) ∘ (\p → ( (\b → f (fst (fst p)) (g (snd (fst p)) b)) , (snd p)))) (fpair₀ (fpair₀ γ α) β)
+      ＝⟨ PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ (\p → (fst p) (snd p)) (pfmap₀ (\p → ( (\b → f (fst (fst p)) (g (snd (fst p)) b)) , (snd p))) (fpair₀ (fpair₀ γ α) β))
+      ＝⟨⟩
+        pfmap₀ (\p → (fst p) (snd p)) (pfmap₀ (\p → ( (\q → (\b → f (fst q) (g (snd q) b))) (fst p) , (snd p))) (fpair₀ (fpair₀ γ α) β))
+      ＝⟨- fun-eq (\x → pfmap₀ (\p → fst p (snd p)) x) (Fpair-Fmap-Composition1 pfunctor _ _ _) ⟩
+        pfmap₀ (\p → (fst p) (snd p)) (fpair₀ (pfmap₀ (\p → (\b → f (fst p) (g (snd p) b))) (fpair₀ γ α)) β)
+      ＝⟨⟩
+        pfmap₀ (\p → id (B → E) (fst p) (snd p)) (fpair₀ (pfmap₀ (\p → (\c a b → f c (g a b)) (fst p) (snd p)) (fpair₀ γ α)) β)
+      ＝⟨⟩
+        liftA2₀ (id (B → E)) (liftA2₀ (\c a b → f c (g a b)) γ α) β
+      ＝-qed
+  }
+  where
+    punit₀ : {A : Set i} → A → F A
+    punit₀ = punit pfunctor
+    pfmap₀ : {A B : Set i} → (A → B) → F A → F B
+    pfmap₀ = pfmap pfunctor
+    fpair₀ : {A B : Set i} → F A → F B → F (Pair A B)
+    fpair₀ = fpair pfunctor
+    liftA0₀ : {A : Set i} → A → F A
+    liftA0₀ {A} = punit₀
+    liftA2₀ : {A B C : Set i} → (A → B → C) → F A → F B → F C
+    liftA2₀ {A} {B} {C} f α β = pfmap₀ (\p → f (fst p) (snd p)) (fpair₀ α β)
+  

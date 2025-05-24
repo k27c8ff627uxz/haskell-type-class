@@ -1,12 +1,11 @@
 {-# OPTIONS --prop #-}
 
-module Hierarchies.Applicative-Functor where
+module Hierarchies.Applicative.toFunctor where
 
 open import Agda.Primitive
 open import Logic
 open import Elements
 open import TypeClassDefs
-open import Hierarchies.Applicative-LiftA02
 
 Applicative-to-Functor : {i : Level} → {F : Set i → Set i} → Applicative F → Functor F
 Applicative-to-Functor
@@ -79,48 +78,64 @@ LiftA02-to-Functor {i} {F} lifta02 =
     liftA0₀ : {A : Set i} → A → F A
     liftA0₀ = liftA0 lifta02
 
-Applicative-to-Functor-fmap-Eq : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → {A B : Set i} → fmap (Applicative-to-Functor applicative) {A} {B} ＝ afmap applicative {A} {B}
-Applicative-to-Functor-fmap-Eq {i} {F} applicative {A} {B} = ＝-refl _
+ProductiveFunctor-to-Functor : {i : Level} → {F : Set i → Set i} → ProductiveFunctor F → Functor F
+ProductiveFunctor-to-Functor {i} {F} pfunctor = FunctorWithUnit-to-Functor (ProductiveFunctor-to-FunctorWithUnit pfunctor)
 
-LiftA02-to-Functor-fmap-Eq : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → {A B : Set i} → fmap (LiftA02-to-Functor lifta02) {A} {B} ＝ liftA1 lifta02 {A} {B}
-LiftA02-to-Functor-fmap-Eq {i} {F} lifta02 {A} {B} = ＝-refl _
 
-LiftA02-Applicative-Functor-Eq : {i : Level} → {F : Set i → Set i} → (lifta02 : LiftA02 F) → Applicative-to-Functor (LiftA02-to-Applicative lifta02) ＝ LiftA02-to-Functor lifta02
-LiftA02-Applicative-Functor-Eq {i} {F} lifta02 =
-  let applicative : Applicative F
-      applicative = LiftA02-to-Applicative lifta02
-  in Functor-Equal
-    _
-    _
-    (\A B → fun-ext _ _ (\(f : A → B) →
+Applicative-to-FunctorWithUnit : {i : Level} → {F : Set i → Set i} → Applicative F → FunctorWithUnit F
+Applicative-to-FunctorWithUnit {i} {F} applicative
+  = record {
+    FunctorWithUnit-to-Functor = FunctorWithUnit-to-Functor₀
+    ; unit = unit₀
+    ; Unit-Homomorphism = \{A} {B} → \(a : A) → \(f : A → B) →
       ＝-begin
-        fmap (Applicative-to-Functor (LiftA02-to-Applicative lifta02)) f
+        ufmap₀ f (unit₀ a)
       ＝⟨⟩
-        fmap (Applicative-to-Functor applicative) f
+        ap₀ (pure₀ f) (pure₀ a)
+      ＝⟨ Ap-Homomorphism applicative f a ⟩
+        pure₀ (f a)
       ＝⟨⟩
-        (ap applicative) (pure applicative f)
-      ＝⟨⟩
-        liftA1 (lifta02) f
-      ＝⟨⟩
-        fmap (LiftA02-to-Functor lifta02) f
+        unit₀ (f a)
       ＝-qed
-    ))
+  }
+  where
+    ap₀ : {A B : Set i} → F (A → B) → F A → F B
+    ap₀ = ap applicative
+    pure₀ : {A : Set i} → A → F A
+    pure₀ = pure applicative
+    unit₀ : {A : Set i} → A → F A
+    unit₀ = pure₀
+    FunctorWithUnit-to-Functor₀ : Functor F
+    FunctorWithUnit-to-Functor₀ = Applicative-to-Functor applicative
+    ufmap₀ : {A B : Set i} → (A → B) → F A → F B
+    ufmap₀ = fmap FunctorWithUnit-to-Functor₀
 
-Applicative-LiftA02-Functor-Eq : {i : Level} → {F : Set i → Set i} → (applicative : Applicative F) → LiftA02-to-Functor (Applicative-to-LiftA02 applicative) ＝ Applicative-to-Functor applicative
-Applicative-LiftA02-Functor-Eq {i} {F} applicative =
-  let lifta02 : LiftA02 F
-      lifta02 = Applicative-to-LiftA02 applicative
-  in Functor-Equal
-    _
-    _
-    (\A B →
+LiftA02-to-FunctorWithUnit : {i : Level} → {F : Set i → Set i} → LiftA02 F → FunctorWithUnit F
+LiftA02-to-FunctorWithUnit {i} {F} lifta02
+  = record {
+    FunctorWithUnit-to-Functor = FunctorWithUnit-to-Functor₀
+    ; unit = liftA0₀
+    ; Unit-Homomorphism = \{A} {B} → \(a : A) → \(f : A → B) →
       ＝-begin
-        fmap (LiftA02-to-Functor (Applicative-to-LiftA02 applicative))
+        fmap FunctorWithUnit-to-Functor₀ f (liftA0₀ a)
       ＝⟨⟩
-        liftA1 (Applicative-to-LiftA02 applicative)
-      ＝⟨- AFmap-Eq-LiftA1 applicative ⟩
-        afmap applicative
+        fmap (LiftA02-to-Functor lifta02) f (liftA0₀ a)
       ＝⟨⟩
-        fmap (Applicative-to-Functor applicative)
+        liftA1₀ f (liftA0₀ a)
+      ＝⟨⟩
+        liftA2₀ (id (A → B)) (liftA0₀ f) (liftA0₀ a)
+      ＝⟨ LiftA2-Homomorphism lifta02 _ _ _ ⟩
+        liftA0₀ ((id (A → B)) f a)
+      ＝⟨⟩
+        liftA0₀ (f a)
       ＝-qed
-    )
+  }
+  where
+    liftA0₀ : {A : Set i} → A → F A
+    liftA0₀ = liftA0 lifta02
+    liftA2₀ : {A B C : Set i} → (A → B → C) → F A → F B → F C
+    liftA2₀ = liftA2 lifta02
+    liftA1₀ : {A B : Set i} → (A → B) → F A → F B
+    liftA1₀ = liftA1 lifta02
+    FunctorWithUnit-to-Functor₀ : Functor F
+    FunctorWithUnit-to-Functor₀ = LiftA02-to-Functor lifta02
