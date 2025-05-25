@@ -173,6 +173,212 @@ Applicative-to-LiftA02 {i} {F} applicative =
     liftA3₀ : {A B C D : Set i} → (A → B → C → D) → F A → F B → F C → F D
     liftA3₀ {A} {B} {C} {D} f α β γ = liftA2₀ (id (C → D)) (liftA2₀ f α β) γ
 
+Applicative-to-ProductiveFunctor : {i : Level} → {F : Set i → Set i} → Applicative F → ProductiveFunctor F
+Applicative-to-ProductiveFunctor {i} {F} applicative
+  = record {
+    ProductiveFunctor-to-FunctorWithUnit = ProductiveFunctor-to-FunctorWithUnit₀
+    ; fpair = fpair₀
+    ; Fpair-Homomorphism1 = \{A B} → \(a : A) → \(β : F B) →
+      ＝-begin
+        fpair₀ (unit ProductiveFunctor-to-FunctorWithUnit₀ a) β
+      ＝⟨⟩
+        fpair₀ (unit (Applicative-to-FunctorWithUnit applicative) a) β
+      ＝⟨⟩
+        fpair₀ (pure₀ a) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) (pure₀ a)) β
+      ＝⟨ fun-eq (\x → ap₀ x β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (pure₀ ((\a → \b → (a , b)) a)) β
+      ＝⟨⟩
+        ap₀ (pure₀ (\b → (a , b))) β
+      ＝⟨⟩
+        fmap (Applicative-to-Functor applicative) (\b → (a , b)) β
+      ＝⟨⟩
+        fmap (FunctorWithUnit-to-Functor (Applicative-to-FunctorWithUnit applicative)) (\b → (a , b)) β
+      ＝⟨⟩
+        ufmap (Applicative-to-FunctorWithUnit applicative) (\b → (a , b)) β
+      ＝⟨⟩
+        ufmap ProductiveFunctor-to-FunctorWithUnit₀ (\b → a , b) β
+      ＝-qed
+    ; Fpair-Homomorphism2 = \{A B} → \(α : F A) → \(b : B) →
+      ＝-begin
+        fpair₀ α (unit ProductiveFunctor-to-FunctorWithUnit₀ b)
+      ＝⟨⟩
+        fpair₀ α (unit (Applicative-to-FunctorWithUnit applicative) b)
+      ＝⟨⟩
+        fpair₀ α (pure₀ b)
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) (pure₀ b)
+      ＝⟨ Ap-Interchange applicative _ _ ⟩
+        ap₀ (pure₀ (\f → f b)) (ap₀ (pure₀ (\a → \b → (a , b))) α)
+      ＝⟨- Ap-Composition applicative _ _ _ ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (\f → f b))) (pure₀ (\a → \b → (a , b)))) α
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ x (pure₀ (\a → \b → a , b))) α) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (pure₀ (_∘_ (\f → f b))) (pure₀ (\a → \b → (a , b)))) α
+      ＝⟨ fun-eq (\x → ap₀ x α) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (pure₀ (_∘_ (\f → f b) (\a → \b → (a , b)))) α
+      ＝⟨⟩
+        ap₀ (pure₀ (\a → (a , b))) α
+      ＝⟨⟩
+        fmap (Applicative-to-Functor applicative) (\a → (a , b)) α
+      ＝⟨⟩
+        ufmap (Applicative-to-FunctorWithUnit applicative) (\a → (a , b)) α
+      ＝⟨⟩
+        ufmap ProductiveFunctor-to-FunctorWithUnit₀ (\a → (a , b)) α
+      ＝-qed
+    ; Fpair-Associative = \{A B C} → \(α : F A) → \(β : F B) → \(γ : F C) →
+      ＝-begin
+        ufmap ProductiveFunctor-to-FunctorWithUnit₀ assoc-Pair (fpair₀ (fpair₀ α β) γ)
+      ＝⟨⟩
+        ufmap (Applicative-to-FunctorWithUnit applicative) assoc-Pair (fpair₀ (fpair₀ α β) γ)
+      ＝⟨⟩
+        fmap (Applicative-to-Functor applicative) assoc-Pair (fpair₀ (fpair₀ α β) γ)
+      ＝⟨⟩
+        ap₀ (pure₀ assoc-Pair) (fpair₀ (fpair₀ α β) γ)
+      ＝⟨⟩
+        ap₀ (pure₀ assoc-Pair) (ap₀ (ap₀ (pure₀ (\ab → \c → (ab , c))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β)) γ)
+      ＝⟨- Ap-Composition applicative _ _ _ ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ assoc-Pair)) (ap₀ (pure₀ (\ab → \c → (ab , c))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β))) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ x (ap₀ (pure₀ (\ab → \c → ab , c)) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β))) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (pure₀ (_∘_ assoc-Pair)) (ap₀ (pure₀ (\ab → \c → (ab , c))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β))) γ
+      ＝⟨- fun-eq (\x → ap₀ x γ) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (_∘_ assoc-Pair))) (pure₀ (\ab → \c → (ab , c)))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β)) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x (pure₀ (\ab → \c → ab , c))) (ap₀ (ap₀ (pure₀ (\a → \b → a , b)) α) β)) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (_∘_ assoc-Pair))) (pure₀ (\ab → \c → (ab , c)))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β)) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ x (ap₀ (ap₀ (pure₀ (\a → \b → a , b)) α) β)) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (pure₀ (_∘_ (_∘_ assoc-Pair) (\ab → \c → (ab , c)))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β)) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\ab → _∘_ assoc-Pair (\c → (ab , c)))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β)) γ
+      ＝⟨- fun-eq (\x → ap₀ x γ) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (\ab → _∘_ assoc-Pair (\c → (ab , c))))) (ap₀ (pure₀ (\a → \b → (a , b))) α)) β) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x (ap₀ (pure₀ (\a → \b → (a , b))) α)) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (\ab → _∘_ assoc-Pair (\c → (ab , c))))) (ap₀ (pure₀ (\a → \b → (a , b))) α)) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ x β) γ) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (_∘_ (\ab → _∘_ assoc-Pair (\c → (ab , c)))))) (pure₀ (\a → \b → (a , b)))) α) β) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ x (pure₀ (\a → \b → (a , b)))) α) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (_∘_ (\ab → _∘_ assoc-Pair (\c → (ab , c)))))) (pure₀ (\a → \b → (a , b)))) α) β) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x α) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (_∘_ (\ab → _∘_ assoc-Pair (\c → (ab , c)))) (\a → \b → (a , b)))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → _∘_ (\ab → _∘_ assoc-Pair (\c → (ab , c))) (\b → (a , b)))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → \b → (\ab → _∘_ assoc-Pair (\c → (ab , c))) (a , b))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → \b → _∘_ assoc-Pair (\c → ((a , b) , c)))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → \b → \c → assoc-Pair ((a , b) , c))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → \b → \c → (a , (b , c)))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → ((_∘_ _∘_ _∘_) (\bc → (a , bc))) (\b → \c → (b , c)))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → (\f → f (\b → \c → (b , c))) ((_∘_ _∘_ _∘_) (\bc → (a , bc))))) α) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (\f → f (\b → \c → (b , c))) (\a → (_∘_ _∘_ _∘_) (\bc → (a , bc))))) α) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ (ap₀ x α) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (\f → f (\b → \c → (b , c))))) (pure₀ (\a → (_∘_ _∘_ _∘_) (\bc → (a , bc))))) α) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ x (pure₀ (\a → (_∘_ ∘ _∘_) (\bc → (a , bc))))) α) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (\f → f (\b → \c → (b , c))))) (pure₀ (\a → (_∘_ _∘_ _∘_) (\bc → (a , bc))))) α) β) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ x β) γ) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\f → f (\b → \c → (b , c)))) (ap₀ (pure₀ (\a → (_∘_ _∘_ _∘_) (\bc → (a , bc)))) α)) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ x β) γ) (Ap-Interchange applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (\a → (_∘_ _∘_ _∘_) (\bc → (a , bc)))) α) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (_∘_ _∘_ _∘_) (\a → \bc → (a , bc)))) α) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ x α) (pure₀ (\b → \c → (b , c)))) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (_∘_ _∘_ _∘_))) (pure₀ (\a → \bc → (a , bc)))) α) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ (ap₀ x (pure₀ (\a → \bc → (a , bc)))) α) (pure₀ (\b → \c → b , c))) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (_∘_ _∘_ _∘_))) (pure₀ (\a → \bc → (a , bc)))) α) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x (pure₀ (\b → \c → (b , c)))) β) γ) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ _∘_ _∘_)) (ap₀ (pure₀ (\a → \bc → (a , bc))) α)) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ x (ap₀ (pure₀ (\a → \bc → a , bc)) α)) (pure₀ (\b → \c → (b , c)))) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ _∘_)) (pure₀ _∘_)) (ap₀ (pure₀ (\a → \bc → (a , bc))) α)) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ (ap₀ x (pure₀ _∘_)) (ap₀ (pure₀ (\a → \bc → (a , bc))) α)) (pure₀ (\b → \c → (b , c)))) β) γ) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ _∘_)) (pure₀ _∘_)) (ap₀ (pure₀ (\a → \bc → (a , bc))) α)) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x (pure₀ (\b → \c → (b , c)))) β) γ) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (ap₀ (pure₀ _∘_) (ap₀ (pure₀ (\a → \bc → (a , bc))) α))) (pure₀ (\b → \c → (b , c)))) β) γ
+      ＝⟨ fun-eq (\x → ap₀ x γ) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ _∘_) (ap₀ (pure₀ (\a → \bc → (a , bc))) α)) (ap₀ (pure₀ (\b → \c → (b , c))) β)) γ
+      ＝⟨ Ap-Composition applicative _ _ _ ⟩
+        ap₀ (ap₀ (pure₀ (\a → \bc → (a , bc))) α) (ap₀ (ap₀ (pure₀ (\b → \c → (b , c))) β) γ)
+      ＝⟨⟩
+        fpair₀ α (fpair₀ β γ)
+      ＝-qed
+    ; Fpair-Fmap-Composition = \{A A' B B'} → \(f : A → A') → \(g : B → B') → \(α : F A) → \(β : F B) →
+      ＝-begin
+        fpair₀ (ufmap ProductiveFunctor-to-FunctorWithUnit₀ f α) (ufmap ProductiveFunctor-to-FunctorWithUnit₀ g β)
+      ＝⟨⟩
+        fpair₀ (ufmap (Applicative-to-FunctorWithUnit applicative) f α) (ufmap (Applicative-to-FunctorWithUnit applicative) g β)
+      ＝⟨⟩
+        fpair₀ (fmap (Applicative-to-Functor applicative) f α) (fmap (Applicative-to-Functor applicative) g β)
+      ＝⟨⟩
+        fpair₀ (ap₀ (pure₀ f) α) (ap₀ (pure₀ g) β)
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) (ap₀ (pure₀ f) α)) (ap₀ (pure₀ g) β)
+      ＝⟨- Ap-Composition applicative _ _ _ ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ _∘_) (ap₀ (pure₀ (\a → \b → (a , b))) (ap₀ (pure₀ f) α))) (pure₀ g)) β
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ x (pure₀ g)) β) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ _∘_)) (pure₀ (\a → \b → (a , b)))) (ap₀ (pure₀ f) α)) (pure₀ g)) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ x (pure₀ (\a → \b → (a , b)))) (ap₀ (pure₀ f) α)) (pure₀ g)) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ _∘_)) (pure₀ (\a → \b → (a , b)))) (ap₀ (pure₀ f) α)) (pure₀ g)) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x (ap₀ (pure₀ f) α)) (pure₀ g)) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ _∘_ (\a → \b → (a , b)))) (ap₀ (pure₀ f) α)) (pure₀ g)) β
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → _∘_ (\b → (a , b)))) (ap₀ (pure₀ f) α)) (pure₀ g)) β
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ x (pure₀ g)) β) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (\a → _∘_ (\b → (a , b))))) (pure₀ f)) α) (pure₀ g)) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ (ap₀ x (pure₀ f)) α) (pure₀ g)) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (\a → _∘_ (\b → (a , b))))) (pure₀ f)) α) (pure₀ g)) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x α) (pure₀ g)) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (\a → _∘_ (\b → (a , b))) f)) α) (pure₀ g)) β
+      ＝⟨⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (\a → _∘_ (\b → (f a , b)))) α) (pure₀ g)) β
+      ＝⟨ fun-eq (\x → ap₀ x β) (Ap-Interchange applicative _ _) ⟩
+        ap₀ (ap₀ (pure₀ (\r → r g)) (ap₀ (pure₀ (\a → _∘_ (\b → (f a , b)))) α)) β
+      ＝⟨- fun-eq (\x → ap₀ x β) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (\r → r g))) (pure₀ (\a → _∘_ (\b → (f a , b))))) α) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ (ap₀ x (pure₀ (\a → _∘_ (\b → f a , b)))) α) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (\r → r g))) (pure₀ (\a → _∘_ (\b → (f a , b))))) α) β
+      ＝⟨ fun-eq (\x → ap₀ (ap₀ x α) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (pure₀ (_∘_ (\r → r g) (\a → _∘_ (\b → (f a , b))))) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → _∘_ (\b → (f a , b)) g)) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → \b → (f a , g b))) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → \b → (f (fst (a , b)) , g (snd (a , b))))) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (\a → _∘_ (\p → (f (fst p) , g (snd p))) (\b → (a , b)))) α) β
+      ＝⟨⟩
+        ap₀ (ap₀ (pure₀ (_∘_ (_∘_ (\p → (f (fst p) , g (snd p)))) (\a → \b → (a , b)))) α) β
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ x α) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ (_∘_ (_∘_ (\p → (f (fst p) , g (snd p)))))) (pure₀ (\a → \b → (a , b)))) α) β
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ (ap₀ x (pure₀ (\a → \b → (a , b)))) α) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (_∘_ (\p → (f (fst p) , g (snd p)))))) (pure₀ (\a → \b → (a , b)))) α) β
+      ＝⟨ fun-eq (\x → ap₀ x β) (Ap-Composition applicative _ _ _) ⟩
+        ap₀ (ap₀ (pure₀ (_∘_ (\p → (f (fst p) , g (snd p))))) (ap₀ (pure₀ (\a → \b → (a , b))) α)) β
+      ＝⟨- fun-eq (\x → ap₀ (ap₀ x (ap₀ (pure₀ (\a → \b → (a , b))) α)) β) (Ap-Homomorphism applicative _ _) ⟩
+        ap₀ (ap₀ (ap₀ (pure₀ _∘_) (pure₀ (\p → (f (fst p) , g (snd p))))) (ap₀ (pure₀ (\a → \b → (a , b))) α)) β
+      ＝⟨ Ap-Composition applicative _ _ _ ⟩
+        ap₀ (pure₀ (\p → (f (fst p) , g (snd p)))) (ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β)
+      ＝⟨⟩
+        ap₀ (pure₀ (\p → (f (fst p) , g (snd p)))) (fpair₀ α β)
+      ＝⟨⟩
+        fmap (Applicative-to-Functor applicative) (\p → (f (fst p) , g (snd p))) (fpair₀ α β)
+      ＝⟨⟩
+        ufmap (Applicative-to-FunctorWithUnit applicative) (\p → (f (fst p) , g (snd p))) (fpair₀ α β)
+      ＝⟨⟩
+        ufmap ProductiveFunctor-to-FunctorWithUnit₀ (\p → f (fst p) , g (snd p)) (fpair₀ α β)
+      ＝-qed
+  } where
+    pure₀ : ∀{A} → A → F A
+    pure₀ = pure applicative
+    ap₀ : ∀{A B : Set i} → F (A → B) → F A → F B
+    ap₀ = ap applicative
+    ProductiveFunctor-to-FunctorWithUnit₀ : FunctorWithUnit F
+    ProductiveFunctor-to-FunctorWithUnit₀ = Applicative-to-FunctorWithUnit applicative
+    fpair₀ : {A B : Set i} → F A → F B → F (Pair A B)
+    fpair₀ α β = ap₀ (ap₀ (pure₀ (\a → \b → (a , b))) α) β
 
 LiftA02-to-Applicative : {i : Level} → {F : Set i → Set i} → LiftA02 F → Applicative F
 LiftA02-to-Applicative
@@ -340,6 +546,128 @@ LiftA02-to-ProductiveFunctor {i} {F} lifta02 =
     liftA3₀ = liftA3 lifta02
     fpair₀ : {A B : Set i} → F A → F B → F (Pair A B)
     fpair₀ = liftA2₀ (\a → \b → (a , b))
+
+ProductiveFunctor-to-Applicative : {i : Level} → {F : Set i → Set i} → ProductiveFunctor F → Applicative F
+ProductiveFunctor-to-Applicative {i} {F} pfunctor =
+  record {
+    pure = punit₀
+    ; ap = ap₀
+    ; Ap-Identity = \{A} → fun-ext _ _ (\α →
+      ＝-begin
+        ap₀ (punit₀ (id A)) α
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (punit₀ (id A)) α)
+      ＝⟨ fun-eq (\x → pfmap₀ pMapApply x) (Fpair-Homomorphism1 pfunctor _ _) ⟩
+        pfmap₀ pMapApply (pfmap₀ (\a → (id A , a)) α)
+      ＝⟨- PFmap-Composition' pfunctor α ⟩
+        pfmap₀ (pMapApply ∘ (\a → (id A , a))) α
+      ＝⟨⟩
+        pfmap₀ (\a → a) α
+      ＝⟨ fun-eq (\x → x α) (PFmap-Identity pfunctor) ⟩
+        id (F A) α
+      ＝-qed
+    )
+    ; Ap-Composition = \{A B C} → \(u : F (B → C)) → \(v : F (A → B)) → \(w : F A) →
+      ＝-begin
+        ap₀ (ap₀ (ap₀ (punit₀ _∘_) u) v) w
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ (punit₀ _∘_) u)) v)) w)
+      ＝⟨ fun-eq (\x → pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply x) v)) w)) (Fpair-Homomorphism1 pfunctor _ _) ⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (pfmap₀ (\g → (_∘_ , g)) u)) v)) w)
+      ＝⟨- fun-eq (\x → pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ x v)) w)) (PFmap-Composition' pfunctor _) ⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ (pfmap₀ (pMapApply ∘ (\g → (_∘_ , g))) u) v)) w)
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ (pfmap₀ (\g → pMapApply (_∘_ , g)) u) v)) w)
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (fpair₀ (pfmap₀ (\g → _∘_ g) u) v)) w)
+      ＝⟨ fun-eq (\x → pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply x) w)) (Fpair-Fmap-Composition1 pfunctor _ _ _) ⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (pfmap₀ (\p → ((\g → _∘_ g) (fst p) , snd p)) (fpair₀ u v))) w)
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ pMapApply (pfmap₀ (\p → (_∘_ (fst p) , snd p)) (fpair₀ u v))) w)
+      ＝⟨- fun-eq (\x → pfmap₀ pMapApply (fpair₀ x w)) (PFmap-Composition' pfunctor _) ⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ (pMapApply ∘ (\p → (_∘_ (fst p) , snd p))) (fpair₀ u v)) w)
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ (\p → pMapApply (_∘_ (fst p) , snd p)) (fpair₀ u v)) w)
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (pfmap₀ (\p → _∘_ (fst p) (snd p)) (fpair₀ u v)) w)
+      ＝⟨ fun-eq (\x → pfmap₀ pMapApply x) (Fpair-Fmap-Composition1 pfunctor _ _ _) ⟩
+        pfmap₀ pMapApply (pfmap₀ (\q → ((\p → _∘_ (fst p) (snd p)) (fst q) , (snd q))) (fpair₀ (fpair₀ u v) w))
+      ＝⟨- PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ (pMapApply ∘ (\q → ((\p → _∘_ (fst p) (snd p)) (fst q) , (snd q)))) (fpair₀ (fpair₀ u v) w)
+      ＝⟨⟩
+        pfmap₀ (\q → pMapApply ((\p → _∘_ (fst p) (snd p)) (fst q) , (snd q))) (fpair₀ (fpair₀ u v) w)
+      ＝⟨⟩
+        pfmap₀ (\q → (\p → _∘_ (fst p) (snd p)) (fst q) (snd q)) (fpair₀ (fpair₀ u v) w)
+      ＝⟨⟩
+        pfmap₀ (\q → _∘_ (fst (fst q)) (snd (fst q)) (snd q)) (fpair₀ (fpair₀ u v) w)
+      ＝⟨⟩
+        pfmap₀ (\q → (fst (fst q)) (snd (fst q) (snd q))) (fpair₀ (fpair₀ u v) w)
+      ＝⟨⟩
+        pfmap₀ (\q → (fst (assoc-Pair q) (pMapApply (snd (assoc-Pair q))))) (fpair₀ (fpair₀ u v) w)
+      ＝⟨⟩
+        pfmap₀ ((\p → (fst p) (pMapApply (snd p))) ∘ (\q → assoc-Pair q)) (fpair₀ (fpair₀ u v) w)
+      ＝⟨ PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ (\p → (fst p) (pMapApply (snd p))) (pfmap₀ (\q → assoc-Pair q) (fpair₀ (fpair₀ u v) w))
+      ＝⟨ fun-eq (\x → pfmap₀ (\p → fst p (pMapApply (snd p))) x) (Fpair-Associative pfunctor _ _ _) ⟩
+        pfmap₀ (\p → (fst p) (pMapApply (snd p))) (fpair₀ u (fpair₀ v w))
+      ＝⟨⟩
+        pfmap₀ (\p → pMapApply (fst p , pMapApply (snd p))) (fpair₀ u (fpair₀ v w))
+      ＝⟨⟩
+        pfmap₀ (pMapApply ∘ (\p → (fst p , pMapApply (snd p)))) (fpair₀ u (fpair₀ v w))
+      ＝⟨ PFmap-Composition' pfunctor _ ⟩
+        pfmap₀ pMapApply (pfmap₀ (\p → (fst p , pMapApply (snd p))) (fpair₀ u (fpair₀ v w)))
+      ＝⟨- fun-eq (\x → pfmap₀ pMapApply x) (Fpair-Fmap-Composition2 pfunctor _ _ _) ⟩
+        pfmap₀ pMapApply (fpair₀ u (pfmap₀ pMapApply (fpair₀ v w)))
+      ＝⟨⟩
+        ap₀ u (ap₀ v w)
+      ＝-qed
+    ; Ap-Homomorphism = \{A B} → \(f : A → B) → \(x : A) →
+      ＝-begin
+        ap₀ (punit₀ f) (punit₀ x)
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ (punit₀ f) (punit₀ x))
+      ＝⟨ fun-eq (\x → pfmap₀ pMapApply x) (Fpair-Homomorphism pfunctor _ _) ⟩
+        pfmap₀ pMapApply (punit₀ (f , x))
+      ＝⟨ PUnit-Homomorphism pfunctor _ _ ⟩
+        punit₀ (pMapApply (f , x))
+      ＝⟨⟩
+        punit₀ (f x)
+      ＝-qed
+    ; Ap-Interchange = \{A B} → \(u : F (A → B)) → \(y : A) →
+      ＝-begin
+        ap₀ u (punit₀ y)
+      ＝⟨⟩
+        pfmap₀ pMapApply (fpair₀ u (punit₀ y))
+      ＝⟨ fun-eq (\x → pfmap₀ pMapApply x) (Fpair-Homomorphism2 pfunctor _ _) ⟩
+        pfmap₀ pMapApply (pfmap₀ (\r → (r , y)) u)
+      ＝⟨- PFmap-Composition' pfunctor u ⟩
+        pfmap₀ (pMapApply ∘ (\r → (r , y))) u
+      ＝⟨⟩
+        pfmap₀ (\r → pMapApply (r , y)) u
+      ＝⟨⟩
+        pfmap₀ (\r → r y) u
+      ＝⟨⟩
+        pfmap₀ (\r → pMapApply ((\f → f y) , r)) u
+      ＝⟨⟩
+        pfmap₀ (pMapApply ∘ (\r → ((\f → f y) , r))) u
+      ＝⟨ PFmap-Composition' pfunctor u ⟩
+        pfmap₀ pMapApply (pfmap₀ (\r → ((\f → f y) , r)) u)
+      ＝⟨- fun-eq (\x → pfmap₀ pMapApply x) (Fpair-Homomorphism1 pfunctor _ _) ⟩
+        pfmap₀ pMapApply (fpair₀ (punit₀ (\f → f y)) u)
+      ＝⟨⟩
+        ap₀ (punit₀ (\f → f y)) u
+      ＝-qed
+  } where
+    FunctorWithUnit₀ : FunctorWithUnit F
+    FunctorWithUnit₀ = ProductiveFunctor-to-FunctorWithUnit pfunctor
+    fpair₀ : {A B : Set i} → F A → F B → F (Pair A B)
+    fpair₀ = fpair pfunctor
+    punit₀ : {A : Set i} → A → F A
+    punit₀ = punit pfunctor
+    pfmap₀ : {A B : Set i} → (A → B) → F A → F B
+    pfmap₀ = pfmap pfunctor
+    ap₀ : {A B : Set i} → F (A → B) → F A → F B
+    ap₀ {A} {B} Ff α = pfmap₀ pMapApply (fpair₀ Ff α)
 
 ProductiveFunctor-to-LiftA02 : {i : Level} → {F : Set i → Set i} → ProductiveFunctor F → LiftA02 F
 ProductiveFunctor-to-LiftA02 {i} {F} pfunctor =
