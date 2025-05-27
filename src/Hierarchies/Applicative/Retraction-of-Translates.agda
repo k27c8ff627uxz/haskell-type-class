@@ -157,9 +157,11 @@ retract-LiftA02-to-ProductiveFunctor {i} {F} pfunctor
       ＝-begin
         fpair (LiftA02-to-ProductiveFunctor (ProductiveFunctor-to-LiftA02 pfunctor)) α β
       ＝⟨⟩
-        liftA2 (ProductiveFunctor-to-LiftA02 pfunctor) (\a → \b → (a , b)) α β
+        liftA2 (ProductiveFunctor-to-LiftA02 pfunctor) createPair α β
       ＝⟨⟩
-        pfmap pfunctor (\p → (\a → \b → (a , b)) (fst p) (snd p)) (fpair pfunctor α β)
+        pfmap pfunctor (\p → createPair (fst p) (snd p)) (fpair pfunctor α β)
+      ＝⟨⟩
+        pfmap pfunctor (\p → (fst p , snd p)) (fpair pfunctor α β)
       ＝⟨⟩
         pfmap pfunctor (id (Pair A B)) (fpair pfunctor α β)
       ＝⟨ fun-eq (\x → x (fpair pfunctor α β)) (PFmap-Identity pfunctor) ⟩
@@ -188,13 +190,13 @@ retract-ProductiveFunctor-to-LiftA02 {i} {F} lifta02 =
       ＝⟨⟩
         pfmap (LiftA02-to-ProductiveFunctor lifta02) (\p → f (fst p) (snd p)) (fpair (LiftA02-to-ProductiveFunctor lifta02) α β)
       ＝⟨⟩
-        ufmap (LiftA02-to-FunctorWithUnit lifta02) (\p → f (fst p) (snd p)) (liftA2 lifta02 (\a → \b → (a , b)) α β)
+        ufmap (LiftA02-to-FunctorWithUnit lifta02) (\p → f (fst p) (snd p)) (liftA2 lifta02 createPair α β)
       ＝⟨⟩
-        fmap (LiftA02-to-Functor lifta02) (\p → f (fst p) (snd p)) (liftA2 lifta02 (\a → \b → (a , b)) α β)
+        fmap (LiftA02-to-Functor lifta02) (\p → f (fst p) (snd p)) (liftA2 lifta02 createPair α β)
       ＝⟨⟩
-        liftA1 lifta02 (\p → f (fst p) (snd p)) (liftA2 lifta02 (\a → \b → (a , b)) α β)
+        liftA1 lifta02 (\p → f (fst p) (snd p)) (liftA2 lifta02 createPair α β)
       ＝⟨ LiftA1-LiftA2-Composition lifta02 _ _ _ _ ⟩
-        liftA2 lifta02 (\a → \b → (\p → f (fst p) (snd p)) ((\a' → \b' → (a' , b')) a b)) α β
+        liftA2 lifta02 (\a → \b → (\p → f (fst p) (snd p)) (createPair a b)) α β
       ＝⟨⟩
         liftA2 lifta02 f α β
       ＝-qed
