@@ -1,6 +1,6 @@
 {-# OPTIONS --prop #-}
 
-module Hierarchies.Monad.FromMonad where
+module Hierarchies.Monad.Translates where
 
 open import Agda.Primitive
 open import Logic

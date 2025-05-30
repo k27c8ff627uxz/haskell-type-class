@@ -7,7 +7,7 @@ open import Logic
 open import Elements
 open import TypeClassDefs
 open import Hierarchies.Applicative
-open import Hierarchies.Monad.FromMonad
+open import Hierarchies.Monad.Translates
 
 Monad-to-FunctorWithUnit-to-Functor-Eq : {i : Level} → {F : Set i → Set i} → (monad : Monad F) → FunctorWithUnit-to-Functor (Monad-to-FunctorWithUnit monad) ＝ Monad-to-Functor monad
 Monad-to-FunctorWithUnit-to-Functor-Eq {i} {F} monad = ＝-refl _

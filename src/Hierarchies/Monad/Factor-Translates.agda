@@ -7,7 +7,7 @@ open import Logic
 open import Elements
 open import TypeClassDefs
 open import Hierarchies.Applicative
-open import Hierarchies.Monad.FromMonad
+open import Hierarchies.Monad.Translates
 open import Hierarchies.Monad.Factor-toFunctor
 
 Monad-to-Applicative-to-LiftA02-Eq : {i : Level} → {F : Set i → Set i} → (monad : Monad F) → Applicative-to-LiftA02 (Monad-to-Applicative monad) ＝ Monad-to-LiftA02 monad

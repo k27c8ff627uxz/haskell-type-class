@@ -5,7 +5,7 @@ module Hierarchies.MonadPlus-Alternative where
 open import Agda.Primitive
 open import Logic
 open import TypeClassDefs
-open import Hierarchies.Monad-Applicative
+open import Hierarchies.Monad
 
 MonadPlus-to-Alternative : {i : Level} → {F : Set i → Set i} → MonadPlus F → Alternative F
 MonadPlus-to-Alternative {i} {F} monadplus =
