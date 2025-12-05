@@ -17,3 +17,4 @@ open import TypeClassDefs.Monad public
 open import TypeClassDefs.MonadPlus public
 open import TypeClassDefs.MonadFail public
 open import TypeClassDefs.MonadTrans public
+open import TypeClassDefs.CategoricalMonad public
